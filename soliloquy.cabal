@@ -14,14 +14,25 @@ extra-source-files: CHANGELOG.md
 library
     exposed-modules:    
         Soliloquy,
-        Soliloquy.Source
+        Soliloquy.Source,
+        Soliloquy.Obj,
+        Soliloquy.Parser,
+        Soliloquy.Parser.Error,
+        Soliloquy.Parser.Phase1,
+        Soliloquy.Parser.Phase2
     other-modules:
     build-depends:    
         base ^>=4.14.3.0,
-        protolude
+        protolude,
+        deriving-compat,
+        composition,
+        megaparsec,
+        free
     hs-source-dirs:     src
     default-language:   Haskell2010
     default-extensions:
+        OverloadedStrings,
+        TemplateHaskell
     mixins:   
         base hiding (Prelude), 
         protolude (Protolude as Prelude), 
