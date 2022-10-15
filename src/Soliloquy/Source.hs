@@ -3,11 +3,13 @@ module Soliloquy.Source
   , readSource
   , SrcSpan(..)
   , mkSrcSpan
+  , prettySrcSpan
   ) where
 
-import  Control.Exception   (assert)
-import  Text.Megaparsec     (Pos)
-import  Text.Megaparsec.Pos (SourcePos(SourcePos))
+import            Control.Exception         (assert)
+import            Text.Megaparsec           (Pos, unPos)
+import            Text.Megaparsec.Pos       (SourcePos(SourcePos))
+import  qualified Text.PrettyPrint    as P
 
 -- | Representation of a Soliloquy source file.
 data Source = MkSource
@@ -42,4 +44,13 @@ mkSrcSpan
   -> SrcSpan
 mkSrcSpan (SourcePos p bl bc) (SourcePos p' el ec) =
   assert (p == p' && ((bl == el && bc <= ec) || (bl < el))) 
-    $ MkSrcSpan p (bl, bc) (el, ec)  
+    $ MkSrcSpan p (bl, bc) (el, ec)
+
+-- | User-friendly 'SrcSpan' presentation.
+prettySrcSpan :: SrcSpan -> P.Doc
+prettySrcSpan (MkSrcSpan name (bl, bc) (el, ec)) = 
+  mconcat 
+    [ P.text name, P.colon, P.int $ unPos bl, P.colon, P.int $ unPos bc
+    , P.space, P.text "to", P.space
+    , P.int $ unPos el, P.colon, P.int $ unPos ec
+    ]

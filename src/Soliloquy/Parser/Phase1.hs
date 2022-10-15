@@ -37,9 +37,9 @@ cosrc p = do
   end   <- getSourcePos
   pure $ mkSrcSpan begin end :< f 
 
-objVar :: P1 SrcObj
-objVar = 
-    cosrc $ (OVar . fromString .: (:)) <$> head <*> many tail
+objSym :: P1 SrcObj
+objSym = 
+    cosrc $ (OSym . fromString .: (:)) <$> head <*> many tail
   where 
     head = letterChar <|> oneOf ("_-~*!" :: [Char])
     tail = head <|> numberChar
@@ -53,7 +53,7 @@ objList :: P1 SrcObj
 objList = 
     cosrc . choice $ f <$> parens
   where
-    obj = l $ choice [objVar, objString, objList]
+    obj = l $ choice [objSym, objString, objList]
     parens = 
       [ ("{", "}", CurlyList)
       , ("[", "]", BracketList)
@@ -64,4 +64,4 @@ objList =
 -- | Parses the provided Soliloquy source file into objects.
 p1 :: Source -> Either ParseError [SrcObj]
 p1 (MkSource sourceName sourceContent) = 
-  first P1Error $ parse (ignore *> manyTill objList eof) sourceName sourceContent 
+  first P1Error $ parse (ignore *> manyTill (l objList) eof) sourceName sourceContent 

@@ -13,11 +13,11 @@ data ListKind
   = CurlyList   -- ^ {...}
   | BracketList -- ^ [...]
   | ParenList   -- ^ (...)
-  deriving Show 
+  deriving (Eq, Show) 
 
 -- | Soliloquy Object
 data ObjF a 
-  = OVar    Text
+  = OSym    Text
   | OString Text
   | OList   ListKind [a]
 
