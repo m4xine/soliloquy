@@ -61,8 +61,8 @@ type PsExpr = Expr Ps
 
 -- | A top-level construct in Soliloquy.  
 data Toplevel p
-  = SDefVal (Ann p) VarLit (Expr p) 
-  | SDefFun (Ann p) VarLit [Pat p] (NonEmpty (Expr p))
+  = TLDefVal (Ann p) VarLit (Expr p) 
+  | TLDefFun (Ann p) VarLit [Pat p] (NonEmpty (Expr p))
 
 deriving instance ShowPhrase p => Show (Toplevel p)
 

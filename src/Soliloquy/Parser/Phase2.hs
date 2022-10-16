@@ -52,7 +52,7 @@ tlDefVal = do
     chomp $ matchSym "def"
     name <- chomp varLit
     body <- chomp expr
-    pure $ SDefVal src name body
+    pure $ TLDefVal src name body
 
 toplevel :: P2 PsToplevel
 toplevel = choice [tlDefVal] 
