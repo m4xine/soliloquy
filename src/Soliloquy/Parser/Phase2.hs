@@ -54,8 +54,16 @@ tlDefVal = do
     body <- chomp expr
     pure $ TLDefVal src name body
 
+tlDeclMod :: P2 PsToplevel
+tlDeclMod = do
+  src <- parentSrc
+  runMatchList ParenList $ do
+    chomp $ matchSym "module"
+    name <- chomp varLit
+    pure $ TLDeclMod src name
+
 toplevel :: P2 PsToplevel
-toplevel = choice [tlDefVal] 
+toplevel = choice [tlDefVal, tlDeclMod] 
 
 -- | Parses a list of Soliloquy objects into a concise syntax representation.
 p2 :: [SrcObj] -> Either [ParseError] [PsToplevel]
