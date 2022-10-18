@@ -6,6 +6,7 @@ module Soliloquy.Syntax.Sym
 import            GHC.Show        (Show(show))
 import  qualified Data.Text as T
 
+-- | Symbol representation.
 newtype Sym = MkSym
   { unSym :: NonEmpty Text 
   } deriving (Semigroup, Eq)
