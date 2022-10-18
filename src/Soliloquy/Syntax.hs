@@ -3,7 +3,6 @@ module Soliloquy.Syntax
   , Ann(..)
   , Type(..)
   , Pat(..)
-  , VarLit(..)
   , StringLit(..)
   , Expr(..)
   , PsExpr
@@ -16,6 +15,7 @@ import  qualified Data.Kind             as K
 import            Soliloquy.Source            (SrcSpan)
 import            Soliloquy.Pass              (Ps)
 import            Soliloquy.Type              (Type(..))
+import            Soliloquy.Syntax.Sym        (Sym)
 
 data NoAnn = MkNoAnn deriving Show
 
@@ -41,17 +41,13 @@ data Pat p
 
 deriving instance ShowPhrase p => Show (Pat p)
 
-data VarLit 
-  = VarLitName Text
-  deriving Show
-
 data StringLit
   = StringLitText Text 
   deriving Show 
 
 -- | An expression in Soliloquy.
 data Expr p 
-  = EVar    (Ann p) VarLit
+  = EVar    (Ann p) Sym
   | EString (Ann p) StringLit
   | EList   (Ann p) [Expr p]
 
@@ -61,9 +57,9 @@ type PsExpr = Expr Ps
 
 -- | A top-level construct in Soliloquy.  
 data Toplevel p
-  = TLDefVal  (Ann p) VarLit (Expr p) 
-  | TLDefFun  (Ann p) VarLit [Pat p] (NonEmpty (Expr p))
-  | TLDeclMod (Ann p) VarLit 
+  = TLDefVal  (Ann p) Sym (Expr p) 
+  | TLDefFun  (Ann p) Sym [Pat p] (NonEmpty (Expr p))
+  | TLDeclMod (Ann p) Sym 
 
 deriving instance ShowPhrase p => Show (Toplevel p)
 

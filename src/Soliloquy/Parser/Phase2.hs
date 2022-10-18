@@ -7,33 +7,34 @@ import  Control.Monad.Combinators                 (choice)
 import  Control.Comonad.Cofree                    (Cofree((:<)))
 import  Soliloquy.Parser.Phase2.Internal          (P2, runMatchList, match, chomp, parentSrc, chomps, parseError, runP2)
 import  Soliloquy.Parser.Error                    (ParseError)
-import  Soliloquy.Syntax                          (PsToplevel, PsExpr, Toplevel (..), VarLit(..), Expr(..), StringLit (..))
+import  Soliloquy.Syntax                          (PsToplevel, PsExpr, Toplevel (..), Expr(..), StringLit (..))
+import  Soliloquy.Syntax.Sym                      (Sym, mkSym1)
 import  Soliloquy.Syntax.Obj                      (SrcObj, ListKind (..), ObjF (..))
 
-sym :: P2 Text
+sym :: P2 Sym
 sym = match $ \case
   _ :< OSym s -> pure s
   _ -> parseError "Expected symbol" 
 
-matchSym :: Text -> P2 Text
+matchSym :: Sym -> P2 Sym
 matchSym kw = 
   ifM ((kw ==) <$> sym) 
     (pure kw) 
-    (parseError $ "Expected keyword '" <> kw <> "'")
+    (parseError $ "Expected keyword '" <> show kw <> "'")
+
+matchSym1 :: Text -> P2 Sym
+matchSym1 = matchSym . mkSym1
 
 string :: P2 Text
 string = match $ \case
   _ :< OString s -> pure s
   _ -> parseError "Expected string"
 
-varLit :: P2 VarLit
-varLit = VarLitName <$> sym 
-
 stringLit :: P2 StringLit
 stringLit = StringLitText <$> string
 
 exprVar :: P2 PsExpr
-exprVar = EVar <$> parentSrc <*> varLit
+exprVar = EVar <$> parentSrc <*> sym
 
 exprString :: P2 PsExpr
 exprString = EString <$> parentSrc <*> stringLit
@@ -49,8 +50,8 @@ tlDefVal :: P2 PsToplevel
 tlDefVal = do
   src <- parentSrc
   runMatchList ParenList $ do
-    chomp $ matchSym "def"
-    name <- chomp varLit
+    chomp $ matchSym1 "def"
+    name <- chomp sym
     body <- chomp expr
     pure $ TLDefVal src name body
 
@@ -58,8 +59,8 @@ tlDeclMod :: P2 PsToplevel
 tlDeclMod = do
   src <- parentSrc
   runMatchList ParenList $ do
-    chomp $ matchSym "module"
-    name <- chomp varLit
+    chomp $ matchSym1 "module"
+    name <- chomp sym
     pure $ TLDeclMod src name
 
 toplevel :: P2 PsToplevel

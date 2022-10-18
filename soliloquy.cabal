@@ -18,6 +18,7 @@ library
         Soliloquy.Pass,
         Soliloquy.Type,
         Soliloquy.Syntax,
+        Soliloquy.Syntax.Sym,
         Soliloquy.Syntax.Obj,
         Soliloquy.Parser,
         Soliloquy.Parser.Error,

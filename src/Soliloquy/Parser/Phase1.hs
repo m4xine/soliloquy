@@ -2,16 +2,17 @@ module Soliloquy.Parser.Phase1
   ( p1
   ) where
 
-import            Prelude                     hiding  (ignore)
+import            Prelude                     hiding  (sym, ignore)
 import            Control.Comonad.Cofree              (Cofree((:<)))
 import            Data.String                         (fromString)
 import            Data.Composition                    ((.:))
-import            Text.Megaparsec                     (Parsec, getSourcePos, oneOf, anySingle, manyTill, choice, between, eof, parse)
+import            Text.Megaparsec                     (Parsec, getSourcePos, oneOf, anySingle, manyTill, choice, between, eof, parse, sepBy1)
 import            Text.Megaparsec.Char                (space, numberChar, letterChar, char, string, space1)
 import  qualified Text.Megaparsec.Char.Lexer  as L
 import            Soliloquy.Source                    (Source(MkSource), mkSrcSpan, SrcSpan)
 import            Soliloquy.Syntax.Obj                (SrcObj, ObjF(..), ListKind(..))
 import            Soliloquy.Parser.Error              (ParseError(P1Error))
+import            Soliloquy.Syntax.Sym                (Sym(..))
 
 type P1 = Parsec Void Text 
 
@@ -37,12 +38,20 @@ cosrc p = do
   end   <- getSourcePos
   pure $ mkSrcSpan begin end :< f 
 
-objSym :: P1 SrcObj
-objSym = 
-    cosrc $ (OSym . fromString .: (:)) <$> head <*> many tail
+name :: P1 Text
+name = 
+    (fromString .: (:)) <$> head <*> many tail
   where 
     head = letterChar <|> oneOf ("_-~*!" :: [Char])
     tail = head <|> numberChar
+
+sym :: P1 Sym
+sym = do
+  x:xs <- sepBy1 name $ char '.'
+  pure . MkSym $ x :| xs
+
+objSym :: P1 SrcObj
+objSym = cosrc $ OSym <$> sym 
 
 objString :: P1 SrcObj
 objString =
