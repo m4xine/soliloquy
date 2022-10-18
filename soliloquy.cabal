@@ -20,6 +20,7 @@ library
         Soliloquy.Syntax,
         Soliloquy.Syntax.Sym,
         Soliloquy.Syntax.Obj,
+        Soliloquy.Syntax.Ann,
         Soliloquy.Parser,
         Soliloquy.Parser.Error,
         Soliloquy.Parser.Phase1,

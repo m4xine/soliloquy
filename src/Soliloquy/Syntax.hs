@@ -1,7 +1,5 @@
 module Soliloquy.Syntax
-  ( NoAnn(..)
-  , Ann(..)
-  , Type(..)
+  ( Type(..)
   , Pat(..)
   , StringLit(..)
   , Expr(..)
@@ -16,16 +14,7 @@ import            Soliloquy.Source            (SrcSpan)
 import            Soliloquy.Pass              (Ps)
 import            Soliloquy.Type              (Type(..))
 import            Soliloquy.Syntax.Sym        (Sym)
-
-data NoAnn = MkNoAnn deriving Show
-
-type family Ann p :: * where
-  Ann NoAnn = NoAnn
-  Ann Ps    = SrcSpan
- 
-type ConstrainPhrase (c :: K.Type -> K.Constraint) p = (c (Ann p))
-
-type ShowPhrase p = ConstrainPhrase Show p 
+import            Soliloquy.Syntax.Ann        (Ann, ShowPhrase)
 
 -- | A pattern in Soliloquy.
 data Pat p 
