@@ -5,10 +5,10 @@ module Soliloquy.Parser.Phase2
 import  Prelude                           hiding  (sym)
 import  Control.Monad.Combinators                 (choice)
 import  Control.Comonad.Cofree                    (Cofree((:<)))
-import  Soliloquy.Obj                             (SrcObj, ListKind (..), ObjF (..))
 import  Soliloquy.Parser.Phase2.Internal          (P2, runMatchList, match, chomp, parentSrc, chomps, parseError, runP2)
 import  Soliloquy.Parser.Error                    (ParseError)
 import  Soliloquy.Syntax                          (PsToplevel, PsExpr, Toplevel (..), VarLit(..), Expr(..), StringLit (..))
+import  Soliloquy.Syntax.Obj                      (SrcObj, ListKind (..), ObjF (..))
 
 sym :: P2 Text
 sym = match $ \case

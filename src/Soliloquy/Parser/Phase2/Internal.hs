@@ -20,7 +20,7 @@ import  Control.Monad.Loops       (untilM)
 import  Control.Comonad.Cofree    (Cofree((:<)))
 import  Data.Composition          ((.:))
 import  Soliloquy.Source          (SrcSpan)
-import  Soliloquy.Obj             (SrcObj, ListKind, ObjF(..))
+import  Soliloquy.Syntax.Obj      (SrcObj, ListKind, ObjF(..))
 import  Soliloquy.Parser.Error    (ParseError (..))
 
 -- | Second parsing pass monad transformer.

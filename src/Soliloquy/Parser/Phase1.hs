@@ -10,7 +10,7 @@ import            Text.Megaparsec                     (Parsec, getSourcePos, one
 import            Text.Megaparsec.Char                (space, numberChar, letterChar, char, string, space1)
 import  qualified Text.Megaparsec.Char.Lexer  as L
 import            Soliloquy.Source                    (Source(MkSource), mkSrcSpan, SrcSpan)
-import            Soliloquy.Obj                       (SrcObj, ObjF(..), ListKind(..))
+import            Soliloquy.Syntax.Obj                (SrcObj, ObjF(..), ListKind(..))
 import            Soliloquy.Parser.Error              (ParseError(P1Error))
 
 type P1 = Parsec Void Text 

@@ -1,4 +1,4 @@
-module Soliloquy.Obj
+module Soliloquy.Syntax.Obj
   ( ListKind(..)
   , ObjF(..)
   , SrcObj

@@ -15,10 +15,10 @@ library
     exposed-modules:    
         Soliloquy,
         Soliloquy.Source,
-        Soliloquy.Obj,
         Soliloquy.Pass,
         Soliloquy.Type,
         Soliloquy.Syntax,
+        Soliloquy.Syntax.Obj,
         Soliloquy.Parser,
         Soliloquy.Parser.Error,
         Soliloquy.Parser.Phase1,
