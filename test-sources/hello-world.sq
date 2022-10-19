@@ -1,4 +1,6 @@
 (module helloWorld)
 
+(import-as std.io io)
+
 (defn main () 
-  (print-ln "Hello, world!"))
+  (io.print-ln "Hello, world!"))
