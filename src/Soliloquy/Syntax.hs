@@ -49,6 +49,7 @@ data Toplevel p
   = TLDefVal  (Ann p) Sym (Expr p) 
   | TLDefFun  (Ann p) Sym [Pat p] (NonEmpty (Expr p))
   | TLDeclMod (Ann p) Sym 
+  | TLImport  (Ann p) Sym (Maybe Sym)
 
 deriving instance ShowPhrase p => Show (Toplevel p)
 

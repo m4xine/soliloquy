@@ -63,8 +63,22 @@ tlDeclMod = do
     name <- chomp sym
     pure $ TLDeclMod src name
 
+tlImport :: P2 PsToplevel
+tlImport = do
+  src <- parentSrc
+  let import' = runMatchList ParenList $ do
+        chomp $ matchSym1 "import"
+        sym' <- chomp sym
+        pure $ TLImport src sym' Nothing
+  let qualifiedImport = runMatchList ParenList $ do
+        chomp $ matchSym1 "import-as"
+        sym' <- chomp sym
+        qualifier <- chomp sym 
+        pure . TLImport src sym' $ Just qualifier
+  import' <|> qualifiedImport
+
 toplevel :: P2 PsToplevel
-toplevel = choice [tlDefVal, tlDeclMod] 
+toplevel = choice [tlDefVal, tlDeclMod, tlImport] 
 
 -- | Parses a list of Soliloquy objects into a concise syntax representation.
 p2 :: [SrcObj] -> Either [ParseError] [PsToplevel]
