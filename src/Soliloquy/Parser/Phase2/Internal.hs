@@ -10,13 +10,13 @@ module Soliloquy.Parser.Phase2.Internal
   , runMatchListT
   , chomp
   , chomps
+  , chomps1
   , MatchList
   , runMatchList
   ) where
 
 import  Control.Monad.Error.Class (liftEither)
 import  Control.Monad.Trans.Class (MonadTrans)
-import  Control.Monad.Loops       (untilM)
 import  Control.Comonad.Cofree    (Cofree((:<)))
 import  Data.Composition          ((.:))
 import  Soliloquy.Source          (SrcSpan)
@@ -101,7 +101,16 @@ chomp p = get >>= \case
 -- | Chomps with the provided parser until the parser fails
 -- or the parent list is empty. 
 chomps :: Monad m => P2T m a -> MatchListT m [a]
-chomps p = untilM (chomp p) (gets null)
+chomps p = gets null >>= \case
+  False -> (:) <$> chomp p <*> chomps p
+  True -> pure []
+
+-- | Chomps with the provided parser atleast once until the parser
+-- fails or the parent list is empty.
+chomps1 :: Monad m => P2T m a -> MatchListT m (NonEmpty a)
+chomps1 p = gets length >>= \case
+  n | n >= 1 -> (:|) <$> chomp p <*> chomps p
+  _ -> MkMatchListT . lift $ parseError "Expected atleast one child" 
 
 type MatchList = MatchListT Identity
 

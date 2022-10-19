@@ -36,7 +36,6 @@ library
         free,
         transformers,
         mtl,
-        monad-loops,
         parser-combinators,
         pretty,
         text
