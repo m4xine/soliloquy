@@ -1,6 +1,6 @@
 module Soliloquy.Syntax
-  ( Type(..)
-  , Pat(..)
+  ( Pat(..)
+  , PsPat 
   , StringLit(..)
   , Expr(..)
   , PsExpr
@@ -30,6 +30,8 @@ data Pat p
 
 deriving instance ShowPhrase p => Show (Pat p)
 
+type PsPat = Pat Ps 
+
 data StringLit
   = StringLitText Text 
   deriving Show 
@@ -39,6 +41,7 @@ data Expr p
   = EVar    (Ann p) Path
   | EString (Ann p) StringLit
   | EList   (Ann p) [Expr p]
+  | EInvoke (Ann p) (Expr p) (NonEmpty (Expr p))
 
 deriving instance ShowPhrase p => Show (Expr p)
 

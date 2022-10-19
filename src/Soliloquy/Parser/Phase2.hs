@@ -2,14 +2,15 @@ module Soliloquy.Parser.Phase2
   ( p2
   ) where
 
-import  Prelude                           hiding  (sym)
+import  Prelude                           hiding  (sym, Type)
 import  Control.Monad.Combinators                 (choice)
 import  Control.Comonad.Cofree                    (Cofree((:<)))
-import  Soliloquy.Parser.Phase2.Internal          (P2, runMatchList, match, chomp, parentSrc, chomps, parseError, runP2)
+import  Soliloquy.Parser.Phase2.Internal          (P2, runMatchList, match, chomp, parentSrc, chomps, parseError, runP2, runMatchListT, chomps1)
 import  Soliloquy.Parser.Error                    (ParseError)
-import  Soliloquy.Syntax                          (PsToplevel, PsExpr, Toplevel (..), Expr(..), StringLit (..))
-import  Soliloquy.Syntax.Path                     (Path)
+import  Soliloquy.Syntax                          (PsToplevel, PsExpr, Toplevel (..), Expr(..), StringLit (..), PsPat, Pat (..))
+import  Soliloquy.Syntax.Path                     (Path (..))
 import  Soliloquy.Syntax.Obj                      (SrcObj, ListKind (..), ObjF (..))
+import  Soliloquy.Type                            (Type (..))
 
 sym :: P2 Text
 sym = match $ \case
@@ -24,12 +25,40 @@ matchSym s = match $ \case
 path :: P2 Path
 path = match $ \case
   _ :< OPath p -> pure p
+  _ :< OSym s -> pure $ MkPath (s :| [])
   _ -> parseError "Expected path" 
 
 string :: P2 Text
 string = match $ \case
   _ :< OString s -> pure s
   _ -> parseError "Expected string"
+
+typeString :: P2 Type
+typeString = matchSym "String" $> TString 
+
+typeList :: P2 Type
+typeList = runMatchListT ParenList $ TList <$> chomp type'
+
+type' :: P2 Type
+type' = choice [typeString, typeList]
+
+patVar :: P2 PsPat
+patVar = match $ \case
+  ann :< OSym s -> pure $ PVar s ann
+  _ -> parseError "Expected pattern variable"
+
+patSig :: P2 PsPat
+patSig = match $ \case
+  ann :< OSym s -> pure $ PSig (PVar s ann) TDynamic ann 
+  ann :< OList ParenList _ -> 
+    runMatchList ParenList $ do
+      pat' <- chomp pat
+      type'' <- chomp type'
+      pure $ PSig pat' type'' ann 
+  _ -> parseError "Expected pattern signature"
+
+pat :: P2 PsPat 
+pat = choice [patVar, patSig] 
 
 stringLit :: P2 StringLit
 stringLit = StringLitText <$> string
@@ -44,8 +73,14 @@ exprList :: P2 PsExpr
 exprList = 
   EList <$> parentSrc <*> runMatchList BracketList (chomps expr)
 
+exprInvoke :: P2 PsExpr
+exprInvoke = do
+  src <- parentSrc
+  runMatchList ParenList $ do
+    EInvoke src <$> chomp expr <*> chomps1 expr 
+
 expr :: P2 PsExpr
-expr = choice [ exprVar, exprString, exprList ] 
+expr = choice [exprVar, exprString, exprList, exprInvoke] 
 
 tlDefVal :: P2 PsToplevel
 tlDefVal = do
@@ -55,6 +90,16 @@ tlDefVal = do
     name <- chomp sym
     body <- chomp expr
     pure $ TLDefVal src name body
+
+tlDefFun :: P2 PsToplevel
+tlDefFun = do
+  src <- parentSrc
+  runMatchList ParenList $ do
+    chomp $ matchSym "defn"
+    name <- chomp sym
+    params <- chomp . runMatchList ParenList $ chomps pat
+    body <- chomps1 expr
+    pure $ TLDefFun src name params body 
 
 tlDeclMod :: P2 PsToplevel
 tlDeclMod = do
@@ -79,7 +124,7 @@ tlImport = do
   import' <|> qualifiedImport
 
 toplevel :: P2 PsToplevel
-toplevel = choice [tlDefVal, tlDeclMod, tlImport] 
+toplevel = choice [tlDefVal, tlDefFun, tlDeclMod, tlImport] 
 
 -- | Parses a list of Soliloquy objects into a concise syntax representation.
 p2 :: [SrcObj] -> Either [ParseError] [PsToplevel]
