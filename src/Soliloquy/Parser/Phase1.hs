@@ -6,7 +6,7 @@ import            Prelude                     hiding  (sym, try, ignore)
 import            Control.Comonad.Cofree              (Cofree((:<)))
 import            Data.String                         (fromString)
 import            Data.Composition                    ((.:))
-import            Text.Megaparsec                     (Parsec, getSourcePos, oneOf, anySingle, manyTill, choice, between, eof, parse, sepBy1, MonadParsec (try))
+import            Text.Megaparsec                     (Parsec, getSourcePos, oneOf, anySingle, manyTill, choice, between, eof, parse, sepBy1, MonadParsec (try), sepBy)
 import            Text.Megaparsec.Char                (space, numberChar, letterChar, char, string, space1)
 import  qualified Text.Megaparsec.Char.Lexer  as L
 import            Soliloquy.Source                    (Source(MkSource), mkSrcSpan, SrcSpan)
@@ -46,9 +46,9 @@ sym =
     tail = head <|> numberChar
 
 path :: P1 Path
-path = do
-  x:xs <- sepBy1 sym $ char '.'
-  pure . MkPath $ x :| xs
+path = (MkPath .: (:|)) 
+  <$> (sym <* char '.') 
+  <*> sepBy sym (char '.')
 
 objSym :: P1 SrcObj
 objSym = cosrc $ OSym <$> sym 
