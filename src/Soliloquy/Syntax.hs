@@ -13,7 +13,7 @@ import  qualified Data.Kind             as K
 import            Soliloquy.Source            (SrcSpan)
 import            Soliloquy.Pass              (Ps)
 import            Soliloquy.Type              (Type(..))
-import            Soliloquy.Syntax.Sym        (Sym)
+import            Soliloquy.Syntax.Path       (Path)
 import            Soliloquy.Syntax.Ann        (Ann, ShowPhrase)
 
 -- | A pattern in Soliloquy.
@@ -36,7 +36,7 @@ data StringLit
 
 -- | An expression in Soliloquy.
 data Expr p 
-  = EVar    (Ann p) Sym
+  = EVar    (Ann p) Path
   | EString (Ann p) StringLit
   | EList   (Ann p) [Expr p]
 
@@ -46,10 +46,10 @@ type PsExpr = Expr Ps
 
 -- | A top-level construct in Soliloquy.  
 data Toplevel p
-  = TLDefVal  (Ann p) Sym (Expr p) 
-  | TLDefFun  (Ann p) Sym [Pat p] (NonEmpty (Expr p))
-  | TLDeclMod (Ann p) Sym 
-  | TLImport  (Ann p) Sym (Maybe Sym)
+  = TLDefVal  (Ann p) Text (Expr p) 
+  | TLDefFun  (Ann p) Text [Pat p] (NonEmpty (Expr p))
+  | TLDeclMod (Ann p) Text 
+  | TLImport  (Ann p) Path (Maybe Path)
 
 deriving instance ShowPhrase p => Show (Toplevel p)
 

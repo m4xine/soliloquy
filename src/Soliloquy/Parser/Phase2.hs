@@ -8,22 +8,23 @@ import  Control.Comonad.Cofree                    (Cofree((:<)))
 import  Soliloquy.Parser.Phase2.Internal          (P2, runMatchList, match, chomp, parentSrc, chomps, parseError, runP2)
 import  Soliloquy.Parser.Error                    (ParseError)
 import  Soliloquy.Syntax                          (PsToplevel, PsExpr, Toplevel (..), Expr(..), StringLit (..))
-import  Soliloquy.Syntax.Sym                      (Sym, mkSym1)
+import  Soliloquy.Syntax.Path                     (Path)
 import  Soliloquy.Syntax.Obj                      (SrcObj, ListKind (..), ObjF (..))
 
-sym :: P2 Sym
+sym :: P2 Text
 sym = match $ \case
   _ :< OSym s -> pure s
-  _ -> parseError "Expected symbol" 
+  _ -> parseError "Expected symbol"
 
-matchSym :: Sym -> P2 Sym
-matchSym kw = 
-  ifM ((kw ==) <$> sym) 
-    (pure kw) 
-    (parseError $ "Expected keyword '" <> show kw <> "'")
+matchSym :: Text -> P2 Text
+matchSym s = match $ \case 
+  _ :< OSym s' | s == s' -> pure s'
+  _ -> parseError $ "Expected symbol '" <> s <> "'"
 
-matchSym1 :: Text -> P2 Sym
-matchSym1 = matchSym . mkSym1
+path :: P2 Path
+path = match $ \case
+  _ :< OPath p -> pure p
+  _ -> parseError "Expected path" 
 
 string :: P2 Text
 string = match $ \case
@@ -34,7 +35,7 @@ stringLit :: P2 StringLit
 stringLit = StringLitText <$> string
 
 exprVar :: P2 PsExpr
-exprVar = EVar <$> parentSrc <*> sym
+exprVar = EVar <$> parentSrc <*> path
 
 exprString :: P2 PsExpr
 exprString = EString <$> parentSrc <*> stringLit
@@ -50,7 +51,7 @@ tlDefVal :: P2 PsToplevel
 tlDefVal = do
   src <- parentSrc
   runMatchList ParenList $ do
-    chomp $ matchSym1 "def"
+    chomp $ matchSym "def"
     name <- chomp sym
     body <- chomp expr
     pure $ TLDefVal src name body
@@ -59,7 +60,7 @@ tlDeclMod :: P2 PsToplevel
 tlDeclMod = do
   src <- parentSrc
   runMatchList ParenList $ do
-    chomp $ matchSym1 "module"
+    chomp $ matchSym "module"
     name <- chomp sym
     pure $ TLDeclMod src name
 
@@ -67,14 +68,14 @@ tlImport :: P2 PsToplevel
 tlImport = do
   src <- parentSrc
   let import' = runMatchList ParenList $ do
-        chomp $ matchSym1 "import"
-        sym' <- chomp sym
-        pure $ TLImport src sym' Nothing
+        chomp $ matchSym "import"
+        modPath <- chomp path
+        pure $ TLImport src modPath Nothing
   let qualifiedImport = runMatchList ParenList $ do
-        chomp $ matchSym1 "import-as"
-        sym' <- chomp sym
-        qualifier <- chomp sym 
-        pure . TLImport src sym' $ Just qualifier
+        chomp $ matchSym "import-as"
+        modPath <- chomp path
+        modQual <- chomp path 
+        pure . TLImport src modPath $ Just modQual
   import' <|> qualifiedImport
 
 toplevel :: P2 PsToplevel
