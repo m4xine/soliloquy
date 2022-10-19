@@ -11,4 +11,4 @@ newtype Path = MkPath
   } deriving (Semigroup, Eq)
 
 instance Show Path where
-  show = T.unpack . T.intercalate "," . toList . unPath
+  show = T.unpack . T.intercalate "." . toList . unPath
