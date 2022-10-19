@@ -83,8 +83,10 @@ instance MonadTrans MatchListT where
 -- | Match against a list object with a @MatchListT@. 
 runMatchListT :: Monad m => ListKind -> MatchListT m a -> P2T m a 
 runMatchListT kind (MkMatchListT m) = ask >>= \case 
-  -- TODO: Error if list is not entirely consumed (runStateT)
-  _ :< OList k xs | k == kind -> evalStateT m xs 
+  _ :< OList k xs | k == kind -> 
+    runStateT m xs >>= \case
+      (a, []) -> pure a
+      (_,  _) -> parseError "Excess children in list object" 
   _ -> parseError "Expected list object"
 
 -- | Removes the head of the parent list and matches 
