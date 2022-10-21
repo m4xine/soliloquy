@@ -37,10 +37,15 @@ typeString :: P2 Type
 typeString = matchSym "String" $> TString 
 
 typeList :: P2 Type
-typeList = runMatchListT ParenList $ TList <$> chomp type'
+typeList = runMatchListT ParenList $ do
+  chomp $ matchSym "List"
+  TList <$> chomp type'
+
+typeVar :: P2 Type
+typeVar = TVar <$> path
 
 type' :: P2 Type
-type' = choice [typeString, typeList]
+type' = choice [typeString, typeList, typeVar]
 
 patVar :: P2 PsPat
 patVar = match $ \case
